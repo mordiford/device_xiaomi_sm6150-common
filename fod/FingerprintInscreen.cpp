@@ -52,6 +52,7 @@ static void set(const std::string& path, const T& value) {
 }
 
 FingerprintInscreen::FingerprintInscreen() {
+    this->mFodCircleVisible = false;
     TouchFeatureService = ITouchFeature::getService();
     xiaomiFingerprintService = IXiaomiFingerprint::getService();
 }
@@ -100,10 +101,14 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
+    this->mFodCircleVisible = true;
     return Void();
 }
 
 Return<void> FingerprintInscreen::onHideFODView() {
+    set(DISPPARAM_PATH, DISPPARAM_HBM_FOD_OFF);
+    TouchFeatureService->resetTouchMode(Touch_Fod_Enable);
+    this->mFodCircleVisible = false;
     return Void();
 }
 

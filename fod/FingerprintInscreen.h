@@ -57,13 +57,14 @@ public:
     Return<void> switchHbm(bool enabled) override;
 
 private:
+    bool mFodCircleVisible;
     sp<ITouchFeature> TouchFeatureService;
     sp<IXiaomiFingerprint> xiaomiFingerprintService;
 };
 
 }  // namespace implementation
 }  // namespace V1_1
-}  // namespace inscreen
+}  // namespace inscreenx
 }  // namespace fingerprint
 }  // namespace biometrics
 }  // namespace lineage
