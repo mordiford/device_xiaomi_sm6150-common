@@ -28,6 +28,13 @@
 #define PARAM_NIT_630_FOD 1
 #define PARAM_NIT_NONE 0
 
+#define DISPPARAM_PATH "/sys/devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/disp_param"
+#define DISPPARAM_HBM_FOD_ON "0x20000"
+#define DISPPARAM_HBM_FOD_OFF "0xE0000"
+
+#define Touch_Fod_Enable 10
+#define Touch_Aod_Enable 11
+
 #define FOD_SENSOR_X 445
 #define FOD_SENSOR_Y 1931
 #define FOD_SENSOR_SIZE 190
@@ -48,7 +55,6 @@ static void set(const std::string& path, const T& value) {
 
 FingerprintInscreen::FingerprintInscreen() {
     TouchFeatureService = ITouchFeature::getService();
-    xiaomiDisplayFeatureService = IDisplayFeature::getService();
     xiaomiFingerprintService = IXiaomiFingerprint::getService();
 }
 
@@ -73,6 +79,7 @@ Return<void> FingerprintInscreen::onFinishEnroll() {
 }
 
 Return<void> FingerprintInscreen::onPress() {
+    set(DISPPARAM_PATH, DISPPARAM_HBM_FOD_ON);
     TouchFeatureService->setTouchMode(10, 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 3);
@@ -81,6 +88,7 @@ Return<void> FingerprintInscreen::onPress() {
 }
 
 Return<void> FingerprintInscreen::onRelease() {
+    set(DISPPARAM_PATH, DISPPARAM_HBM_FOD_OFF);
     TouchFeatureService->setTouchMode(10, 0);
     xiaomiDisplayFeatureService->setFeature(0, 11, 0, 3);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_NONE);
@@ -88,13 +96,10 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
-    xiaomiDisplayFeatureService->setFeature(0, 17, 1, 255);
-    xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     return Void();
 }
 
 Return<void> FingerprintInscreen::onHideFODView() {
-    xiaomiDisplayFeatureService->setFeature(0, 17, 0, 255);
     return Void();
 }
 
@@ -114,12 +119,11 @@ Return<void> FingerprintInscreen::setLongPressEnabled(bool) {
 
 Return<int32_t> FingerprintInscreen::getDimAmount(int32_t brightness) {
     float alpha;
-    int realBrightness = brightness * 2047 / 255;
 
-    if (realBrightness > 500) {
-        alpha = 1.0 - pow(realBrightness / 2047.0 * 430.0 / 600.0, 0.455);
+    if (brightness > 62) {
+        alpha = 1.0 - pow(brightness / 255.0 * 430.0 / 600.0, 0.45);
     } else {
-        alpha = 1.0 - pow(realBrightness / 1680.0, 0.455);
+        alpha = 1.0 - pow(brightness / 200.0, 0.45);
     }
 
     return 255 * alpha;
